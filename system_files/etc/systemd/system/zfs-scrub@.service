@@ -1,0 +1,15 @@
+[Unit]
+Description=zpool scrub on %i
+Documentation=man:zpool-scrub(8)
+Requires=zfs.target
+After=zfs.target
+ConditionACPower=true
+ConditionPathIsDirectory=/sys/module/zfs
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/zfs
+ExecStart=/usr/bin/systemd-inhibit --what=shutdown --mode=delay --who="zfs-scrub@%i" --why="ZFS scrub in progress on %i" /bin/sh -c '\
+if /sbin/zpool status %i | grep -q "scrub in progress"; then\
+exec /sbin/zpool wait -t scrub %i;\
+else exec /sbin/zpool scrub -w %i; fi'
+ExecStop=-/bin/sh -c '/sbin/zpool scrub -p %i 2>/dev/null || true'
