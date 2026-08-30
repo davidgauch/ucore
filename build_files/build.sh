@@ -13,9 +13,9 @@ cp -avf "/ctx/system_files"/. /
 # https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
 
 # Add mullvad-vpn
-mkdir /usr/lib/mullvad-vpn
+mkdir /etc/mullvad-vpn
 mkdir /var/opt
-ln -s /usr/lib/mullvad-vpn /opt/Mullvad\ VPN
+ln -s /etc/mullvad-vpn /opt/Mullvad\ VPN
 dnf5 config-manager addrepo --from-repofile=https://repository.mullvad.net/rpm/stable/mullvad.repo
 dnf5 install -y mullvad-vpn
 # Fix broken `/opt/Mullvad VPN/` links
@@ -23,7 +23,7 @@ rpm -ql mullvad-vpn | while read -r file; do
     if [[ -L "$file" ]]; then
         ln -sf "$(readlink -f "$file")" "$file"
     elif [[ -f "$file" ]]; then
-        sed -i "s|/opt/Mullvad.*VPN/|/usr/lib/mullvad-vpn/|gw /dev/stdout" "$file"
+        sed -i "s|/opt/Mullvad.*VPN/|/etc/mullvad-vpn/|gw /dev/stdout" "$file"
     fi
 done
 rm /opt/Mullvad\ VPN
@@ -37,5 +37,11 @@ rmdir /var/opt
 # dnf5 -y copr disable ublue-os/staging
 
 #### Example for enabling a System Unit File
+systemctl enable bootc-fetch-apply-updates.timer
 
-# systemctl enable podman.socket
+echo zfs > /etc/modules-load.d/zfs.conf
+systemctl enable zfs-import-scan.service
+
+systemctl enable podman.socket
+systemctl enable podman-auto-update.timer
+systemctl enable cockpit.socket
