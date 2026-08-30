@@ -38,6 +38,15 @@ rmdir /var/opt
 
 #### Example for enabling a System Unit File
 systemctl enable bootc-fetch-apply-updates.timer
+grep -qE 'Unit=zfs-scrub@%i.service' /etc/systemd/system/zfs-scrub-weekly@.timer
+cat <<EOF > /etc/systemd/system/zfs-scrub@.service.d/inhibit.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/systemd-inhibit --what=sleep:idle:shutdown --who="zfs-scrub@%i" --why="ZFS scrub in progress on %i" /bin/sh -c '\
+if /sbin/zpool status %i | grep -q "scrub in progress"; then\
+exec /sbin/zpool wait -t scrub %i;\
+else exec /sbin/zpool scrub -w %i; fi'
+EOF
 
 echo zfs > /etc/modules-load.d/zfs.conf
 systemctl enable zfs-import-scan.service
