@@ -12,8 +12,22 @@ cp -avf "/ctx/system_files"/. /
 # List of rpmfusion packages can be found here:
 # https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
 
-# this installs a package from fedora repos
-dnf5 install -y tmux
+# Add mullvad-vpn
+mkdir /usr/lib/mullvad-vpn
+mkdir /var/opt
+ln -s /usr/lib/mullvad-vpn /opt/Mullvad\ VPN
+dnf5 config-manager addrepo --from-repofile=https://repository.mullvad.net/rpm/stable/mullvad.repo
+dnf5 install -y mullvad-vpn
+# Fix broken `/opt/Mullvad VPN/` links
+rpm -ql mullvad-vpn | while read -r file; do
+    if [[ -L "$file" ]]; then
+        ln -sf "$(readlink -f "$file")" "$file"
+    elif [[ -f "$file" ]]; then
+        sed -i "s|/opt/Mullvad.*VPN/|/usr/lib/mullvad-vpn/|gw /dev/stdout" "$file"
+    fi
+done
+rm /opt/Mullvad\ VPN
+rmdir /var/opt
 
 # Use a COPR Example:
 #
@@ -24,4 +38,4 @@ dnf5 install -y tmux
 
 #### Example for enabling a System Unit File
 
-systemctl enable podman.socket
+# systemctl enable podman.socket
