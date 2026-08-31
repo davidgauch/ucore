@@ -38,10 +38,6 @@ rmdir /var/opt
 
 #### Example for enabling a System Unit File
 systemctl enable bootc-fetch-apply-updates.timer
-
-echo zfs > /etc/modules-load.d/zfs.conf
-systemctl enable zfs-import-scan.service
-
-systemctl enable podman.service
-systemctl enable podman-auto-update.timer
 systemctl enable cockpit.service
+systemctl enable podman-auto-update.timer
+systemctl enable zfs-import-scan.service
