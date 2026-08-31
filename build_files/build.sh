@@ -42,6 +42,6 @@ systemctl enable bootc-fetch-apply-updates.timer
 echo zfs > /etc/modules-load.d/zfs.conf
 systemctl enable zfs-import-scan.service
 
-systemctl enable podman.socket
+systemctl enable podman.service
 systemctl enable podman-auto-update.timer
-systemctl enable cockpit.socket
+systemctl enable cockpit.service
